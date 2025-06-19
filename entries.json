@@ -1,0 +1,65 @@
+[
+  {
+    "id": "1001",
+    "title": "A Rainy Day in 1923",
+    "author": "Eleanor Smith",
+    "date": "1923-04-12",
+    "type": "Diary",
+    "content": "Today the rain fell without pause. I watched the droplets race down the window pane as Mother read aloud by the fire. The world felt small and safe, wrapped in the sound of the storm.",
+    "tags": ["rain", "1920s", "home"]
+  },
+  {
+    "id": "1002",
+    "title": "Letter to My Dearest Friend",
+    "author": "Thomas W. Clarke",
+    "date": "1918-11-05",
+    "type": "Letter",
+    "content": "Dearest Margaret,\n\nThe war is nearly over, they say. I long for the day I may return and see your smile again. Until then, I hold your last letter close to my heart.\n\nYours,\nThomas",
+    "tags": ["WWI", "friendship", "letter"]
+  },
+  {
+    "id": "1003",
+    "title": "Reflections by the Lake",
+    "author": "Anna Lee",
+    "date": "1952-07-19",
+    "type": "Journal",
+    "content": "The lake was still this morning, a perfect mirror for the sky. I sat beneath the old willow and wrote poems in my notebook. Sometimes, I think the world is made of memories and water.",
+    "tags": ["lake", "1950s", "nature"]
+  },
+  {
+    "id": "1004",
+    "title": "First Day at School",
+    "author": "Samuel Green",
+    "date": "1930-09-03",
+    "type": "Diary",
+    "content": "I wore my best shoes and a new cap. The teacher, Miss Carter, smiled kindly. I was nervous, but by lunchtime, I had made a friend named Peter. We traded marbles and stories.",
+    "tags": ["school", "childhood", "1930s"]
+  },
+  {
+    "id": "1005",
+    "title": "Letter from the Trenches",
+    "author": "James H. Miller",
+    "date": "1917-03-14",
+    "type": "Letter",
+    "content": "My dearest Emily,\n\nThe mud is thick and the nights are cold, but thoughts of home keep me warm. I hope this letter finds you in good health. I dream of your apple pie and laughter.\n\nWith love,\nJames",
+    "tags": ["WWI", "family", "trenches"]
+  },
+  {
+    "id": "1006",
+    "title": "A Letter to Father",
+    "author": "Lucy Bennett",
+    "date": "1942-05-22",
+    "type": "Letter",
+    "content": "Dear Father,\n\nI planted the seeds you sent, and already the first shoots are showing. The village is quiet, but we all do our part. I miss your stories at bedtime.\n\nYour loving daughter,\nLucy",
+    "tags": ["WWII", "family", "homefront"]
+  },
+  {
+    "id": "1007",
+    "title": "Letter Across the Sea",
+    "author": "Haruto Sato",
+    "date": "1935-09-10",
+    "type": "Letter",
+    "content": "Dearest Mother,\n\nThe voyage is long, but the ocean is beautiful. I have met people from many lands. I will write again when we reach San Francisco.\n\nWith affection,\nHaruto",
+    "tags": ["immigration", "1930s", "travel"]
+  }
+] 

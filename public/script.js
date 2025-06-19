@@ -1,0 +1,138 @@
+const mainContent = document.getElementById('mainContent');
+const browseBtn = document.getElementById('browseBtn');
+const submitBtn = document.getElementById('submitBtn');
+const browseLettersBtn = document.getElementById('browseLettersBtn');
+
+browseBtn.addEventListener('click', showEntryList);
+submitBtn.addEventListener('click', showSubmitForm);
+browseLettersBtn.addEventListener('click', showLettersList);
+
+document.addEventListener('DOMContentLoaded', showEntryList);
+
+function showEntryList() {
+  mainContent.innerHTML = '<h2>Browse Entries</h2><ul class="entry-list" id="entryList"></ul>';
+  fetch('/api/entries')
+    .then(res => res.json())
+    .then(entries => {
+      const list = document.getElementById('entryList');
+      if (entries.length === 0) {
+        list.innerHTML = '<li>No entries yet.</li>';
+        return;
+      }
+      entries.forEach(entry => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <div class="entry-title">${entry.title}</div>
+          <div class="entry-meta">${entry.type} | ${entry.author} | ${entry.date}</div>
+          <div>${entry.content.slice(0, 120)}${entry.content.length > 120 ? '...' : ''}</div>
+          <div class="entry-actions">
+            <button class="like-btn" aria-label="Like">👍 Like</button>
+            <button class="share-btn" aria-label="Share">🔗 Share</button>
+            <button class="comment-btn" aria-label="Comment">💬 Comment</button>
+          </div>
+        `;
+        li.onclick = () => showEntryDetail(entry.id);
+        list.appendChild(li);
+      });
+    });
+}
+
+function showEntryDetail(id) {
+  fetch(`/api/entries/${id}`)
+    .then(res => res.json())
+    .then(entry => {
+      mainContent.innerHTML = `
+        <button onclick="showEntryList()">&larr; Back</button>
+        <h2>${entry.title}</h2>
+        <div class="entry-meta">${entry.type} | ${entry.author} | ${entry.date}</div>
+        <div style="white-space: pre-line; margin-bottom: 16px;">${entry.content}</div>
+        <button class="audio-btn" onclick="playAudio('${encodeURIComponent(entry.content)}')">🔊 Listen</button>
+      `;
+    });
+}
+
+function playAudio(encodedText) {
+  const text = decodeURIComponent(encodedText);
+  if ('speechSynthesis' in window) {
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 0.95;
+    utter.pitch = 1;
+    utter.lang = 'en-US';
+    window.speechSynthesis.speak(utter);
+  } else {
+    alert('Sorry, your browser does not support speech synthesis.');
+  }
+}
+
+function showSubmitForm() {
+  mainContent.innerHTML = `
+    <h2>Submit a New Entry</h2>
+    <form id="entryForm" class="form-section">
+      <label>Title <input name="title" required></label>
+      <label>Author <input name="author" required></label>
+      <label>Date <input name="date" type="date" required></label>
+      <label>Type
+        <select name="type" required>
+          <option value="Diary">Diary</option>
+          <option value="Journal">Journal</option>
+          <option value="Letter">Letter</option>
+        </select>
+      </label>
+      <label>Tags (comma separated) <input name="tags"></label>
+      <label>Content <textarea name="content" rows="8" required></textarea></label>
+      <button type="submit">Submit</button>
+    </form>
+  `;
+  document.getElementById('entryForm').onsubmit = function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const data = {
+      title: form.title.value,
+      author: form.author.value,
+      date: form.date.value,
+      type: form.type.value,
+      tags: form.tags.value.split(',').map(t => t.trim()).filter(Boolean),
+      content: form.content.value
+    };
+    fetch('/api/entries', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+      .then(res => res.json())
+      .then(entry => {
+        alert('Entry submitted!');
+        showEntryList();
+      })
+      .catch(() => alert('Error submitting entry.'));
+  };
+}
+
+function showLettersList() {
+  mainContent.innerHTML = '<h2>Browse Letters</h2><ul class="entry-list" id="letterList"></ul>';
+  fetch('/api/entries')
+    .then(res => res.json())
+    .then(entries => {
+      const letters = entries.filter(entry => entry.type === 'Letter');
+      const list = document.getElementById('letterList');
+      if (letters.length === 0) {
+        list.innerHTML = '<li>No letters found.</li>';
+        return;
+      }
+      letters.forEach(entry => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <div class="entry-title">${entry.title}</div>
+          <div class="entry-meta">${entry.author} | ${entry.date}</div>
+          <div>${entry.content.slice(0, 120)}${entry.content.length > 120 ? '...' : ''}</div>
+          <div class="entry-actions">
+            <button class="like-btn" aria-label="Like">👍 Like</button>
+            <button class="share-btn" aria-label="Share">🔗 Share</button>
+            <button class="comment-btn" aria-label="Comment">💬 Comment</button>
+          </div>
+        `;
+        li.onclick = () => showEntryDetail(entry.id);
+        list.appendChild(li);
+      });
+    });
+} 
