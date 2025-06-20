@@ -41,26 +41,27 @@ function showEntryDetail(id) {
   fetch(`/api/entries/${id}`)
     .then(res => res.json())
     .then(entry => {
-      // Create a cleaner version of the content for audio
-      const audioContent = entry.content.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-      
       mainContent.innerHTML = `
         <button onclick="showEntryList()">&larr; Back</button>
         <h2>${entry.title}</h2>
         <div class="entry-meta">${entry.type} | ${entry.author} | ${entry.date}</div>
         <div style="white-space: pre-line; margin-bottom: 16px;">${entry.content}</div>
-        <button class="audio-btn" onclick="playAudio('${audioContent}')">🔊 Listen</button>
+        <button class="audio-btn" data-content="${entry.content.replace(/"/g, '&quot;')}">🔊 Listen</button>
       `;
+      
+      // Add event listener to the audio button
+      const audioBtn = mainContent.querySelector('.audio-btn');
+      audioBtn.addEventListener('click', function() {
+        const content = this.getAttribute('data-content');
+        playAudio(content);
+      });
     });
 }
 
-function playAudio(encodedText) {
+function playAudio(content) {
   try {
-    // First decode the URL-encoded text
-    const text = decodeURIComponent(encodedText);
-    
     // Clean up common encoding issues
-    const cleanText = text
+    const cleanText = content
       .replace(/[""]/g, '"')  // Replace smart quotes with regular quotes
       .replace(/['']/g, "'")  // Replace smart apostrophes with regular ones
       .replace(/—/g, '-')     // Replace em dashes with regular dashes
@@ -68,8 +69,7 @@ function playAudio(encodedText) {
       .replace(/\s+/g, ' ')   // Replace multiple spaces with single space
       .trim();                // Remove leading/trailing spaces
     
-    console.log('Original encoded text:', encodedText);
-    console.log('Decoded text:', text);
+    console.log('Original content:', content);
     console.log('Clean text:', cleanText);
     
     if ('speechSynthesis' in window) {
@@ -78,19 +78,18 @@ function playAudio(encodedText) {
       utter.pitch = 1;
       utter.lang = 'en-US';
       
+      // Get the button that was clicked
+      const button = event.target;
+      
       // Add event listeners for better user feedback
       utter.onstart = () => {
         console.log('Audio started playing');
-        // Change button text to show it's playing
-        const button = event.target;
         button.textContent = '🔊 Playing...';
         button.disabled = true;
       };
       
       utter.onend = () => {
         console.log('Audio finished playing');
-        // Reset button text
-        const button = event.target;
         button.textContent = '🔊 Listen';
         button.disabled = false;
       };
@@ -98,8 +97,6 @@ function playAudio(encodedText) {
       utter.onerror = (event) => {
         console.error('Speech synthesis error:', event.error);
         alert('Sorry, there was an error playing the audio. Please try again.');
-        // Reset button text on error
-        const button = event.target;
         button.textContent = '🔊 Listen';
         button.disabled = false;
       };
