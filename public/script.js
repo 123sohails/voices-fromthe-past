@@ -60,6 +60,16 @@ function showEntryDetail(id) {
 
 function playAudio(content) {
   try {
+    // Check if audio is already playing
+    if (window.speechSynthesis.speaking) {
+      // Stop the current audio
+      window.speechSynthesis.cancel();
+      const button = event.target;
+      button.textContent = '🔊 Listen';
+      button.disabled = false;
+      return;
+    }
+    
     // Clean up common encoding issues
     const cleanText = content
       .replace(/[""]/g, '"')  // Replace smart quotes with regular quotes
@@ -84,8 +94,8 @@ function playAudio(content) {
       // Add event listeners for better user feedback
       utter.onstart = () => {
         console.log('Audio started playing');
-        button.textContent = '🔊 Playing...';
-        button.disabled = true;
+        button.textContent = '⏹️ Stop';
+        button.disabled = false;
       };
       
       utter.onend = () => {
