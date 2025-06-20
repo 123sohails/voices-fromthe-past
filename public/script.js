@@ -41,50 +41,76 @@ function showEntryDetail(id) {
   fetch(`/api/entries/${id}`)
     .then(res => res.json())
     .then(entry => {
+      // Create a cleaner version of the content for audio
+      const audioContent = entry.content.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      
       mainContent.innerHTML = `
         <button onclick="showEntryList()">&larr; Back</button>
         <h2>${entry.title}</h2>
         <div class="entry-meta">${entry.type} | ${entry.author} | ${entry.date}</div>
         <div style="white-space: pre-line; margin-bottom: 16px;">${entry.content}</div>
-        <button class="audio-btn" onclick="playAudio('${encodeURIComponent(entry.content)}')">🔊 Listen</button>
+        <button class="audio-btn" onclick="playAudio('${audioContent}')">🔊 Listen</button>
       `;
     });
 }
 
 function playAudio(encodedText) {
-  const text = decodeURIComponent(encodedText);
-  
-  // Clean up common encoding issues
-  const cleanText = text
-    .replace(/[""]/g, '"')  // Replace smart quotes with regular quotes
-    .replace(/['']/g, "'")  // Replace smart apostrophes with regular ones
-    .replace(/—/g, '-')     // Replace em dashes with regular dashes
-    .replace(/…/g, '...')   // Replace ellipsis with regular dots
-    .replace(/\s+/g, ' ')   // Replace multiple spaces with single space
-    .trim();                // Remove leading/trailing spaces
-  
-  if ('speechSynthesis' in window) {
-    try {
+  try {
+    // First decode the URL-encoded text
+    const text = decodeURIComponent(encodedText);
+    
+    // Clean up common encoding issues
+    const cleanText = text
+      .replace(/[""]/g, '"')  // Replace smart quotes with regular quotes
+      .replace(/['']/g, "'")  // Replace smart apostrophes with regular ones
+      .replace(/—/g, '-')     // Replace em dashes with regular dashes
+      .replace(/…/g, '...')   // Replace ellipsis with regular dots
+      .replace(/\s+/g, ' ')   // Replace multiple spaces with single space
+      .trim();                // Remove leading/trailing spaces
+    
+    console.log('Original encoded text:', encodedText);
+    console.log('Decoded text:', text);
+    console.log('Clean text:', cleanText);
+    
+    if ('speechSynthesis' in window) {
       const utter = new SpeechSynthesisUtterance(cleanText);
       utter.rate = 0.95;
       utter.pitch = 1;
       utter.lang = 'en-US';
       
       // Add event listeners for better user feedback
-      utter.onstart = () => console.log('Audio started');
-      utter.onend = () => console.log('Audio finished');
+      utter.onstart = () => {
+        console.log('Audio started playing');
+        // Change button text to show it's playing
+        const button = event.target;
+        button.textContent = '🔊 Playing...';
+        button.disabled = true;
+      };
+      
+      utter.onend = () => {
+        console.log('Audio finished playing');
+        // Reset button text
+        const button = event.target;
+        button.textContent = '🔊 Listen';
+        button.disabled = false;
+      };
+      
       utter.onerror = (event) => {
         console.error('Speech synthesis error:', event.error);
         alert('Sorry, there was an error playing the audio. Please try again.');
+        // Reset button text on error
+        const button = event.target;
+        button.textContent = '🔊 Listen';
+        button.disabled = false;
       };
       
       window.speechSynthesis.speak(utter);
-    } catch (error) {
-      console.error('Speech synthesis error:', error);
+    } else {
       alert('Sorry, your browser does not support speech synthesis.');
     }
-  } else {
-    alert('Sorry, your browser does not support speech synthesis.');
+  } catch (error) {
+    console.error('Error in playAudio function:', error);
+    alert('Sorry, there was an error processing the audio. Please try again.');
   }
 }
 
