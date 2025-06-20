@@ -2,10 +2,25 @@ const mainContent = document.getElementById('mainContent');
 const browseBtn = document.getElementById('browseBtn');
 const submitBtn = document.getElementById('submitBtn');
 const browseLettersBtn = document.getElementById('browseLettersBtn');
+const searchInput = document.getElementById('searchInput');
+const searchBtn = document.getElementById('searchBtn');
+const clearSearchBtn = document.getElementById('clearSearchBtn');
 
 browseBtn.addEventListener('click', showEntryList);
 submitBtn.addEventListener('click', showSubmitForm);
 browseLettersBtn.addEventListener('click', showLettersList);
+
+// Search functionality
+searchBtn.addEventListener('click', performSearch);
+clearSearchBtn.addEventListener('click', clearSearch);
+searchInput.addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') {
+    performSearch();
+  }
+});
+
+// Global variable to store all entries for search
+let allEntries = [];
 
 document.addEventListener('DOMContentLoaded', showEntryList);
 
@@ -14,6 +29,9 @@ function showEntryList() {
   fetch('/api/entries')
     .then(res => res.json())
     .then(entries => {
+      // Store all entries globally for search functionality
+      allEntries = entries;
+      
       const list = document.getElementById('entryList');
       if (entries.length === 0) {
         list.innerHTML = '<li>No entries yet.</li>';
@@ -34,6 +52,9 @@ function showEntryList() {
         li.onclick = () => showEntryDetail(entry.id);
         list.appendChild(li);
       });
+      
+      // Update search button visibility
+      clearSearchBtn.style.display = 'none';
     });
 }
 
@@ -192,4 +213,62 @@ function showLettersList() {
         list.appendChild(li);
       });
     });
+}
+
+function performSearch() {
+  const searchTerm = searchInput.value.trim().toLowerCase();
+  if (searchTerm === '') {
+    showEntryList();
+    return;
+  }
+
+  const filteredEntries = allEntries.filter(entry =>
+    entry.title.toLowerCase().includes(searchTerm) ||
+    entry.author.toLowerCase().includes(searchTerm) ||
+    entry.content.toLowerCase().includes(searchTerm) ||
+    (entry.tags && entry.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
+  );
+
+  // Show clear search button
+  clearSearchBtn.style.display = 'inline-block';
+
+  if (filteredEntries.length === 0) {
+    mainContent.innerHTML = `
+      <h2>Search Results</h2>
+      <div class="no-results">
+        <p>No entries found matching "${searchTerm}"</p>
+        <p>Try searching for different keywords or browse all entries.</p>
+      </div>
+    `;
+    return;
+  }
+
+  mainContent.innerHTML = `
+    <h2>Search Results (${filteredEntries.length} found)</h2>
+    <div class="search-results">Searching for: "${searchTerm}"</div>
+    <ul class="entry-list" id="searchResults"></ul>
+  `;
+  
+  const resultsList = document.getElementById('searchResults');
+  filteredEntries.forEach(entry => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <div class="entry-title">${entry.title}</div>
+      <div class="entry-meta">${entry.type} | ${entry.author} | ${entry.date}</div>
+      <div>${entry.content.slice(0, 120)}${entry.content.length > 120 ? '...' : ''}</div>
+      <div class="entry-actions">
+        <button class="like-btn" aria-label="Like">👍 Like</button>
+        <button class="share-btn" aria-label="Share">🔗 Share</button>
+        <button class="comment-btn" aria-label="Comment">💬 Comment</button>
+      </div>
+    `;
+    li.onclick = () => showEntryDetail(entry.id);
+    resultsList.appendChild(li);
+  });
+}
+
+function clearSearch() {
+  searchInput.value = '';
+  clearSearchBtn.style.display = 'none';
+  showEntryList();
 } 
