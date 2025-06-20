@@ -53,12 +53,36 @@ function showEntryDetail(id) {
 
 function playAudio(encodedText) {
   const text = decodeURIComponent(encodedText);
+  
+  // Clean up common encoding issues
+  const cleanText = text
+    .replace(/[""]/g, '"')  // Replace smart quotes with regular quotes
+    .replace(/['']/g, "'")  // Replace smart apostrophes with regular ones
+    .replace(/—/g, '-')     // Replace em dashes with regular dashes
+    .replace(/…/g, '...')   // Replace ellipsis with regular dots
+    .replace(/\s+/g, ' ')   // Replace multiple spaces with single space
+    .trim();                // Remove leading/trailing spaces
+  
   if ('speechSynthesis' in window) {
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.rate = 0.95;
-    utter.pitch = 1;
-    utter.lang = 'en-US';
-    window.speechSynthesis.speak(utter);
+    try {
+      const utter = new SpeechSynthesisUtterance(cleanText);
+      utter.rate = 0.95;
+      utter.pitch = 1;
+      utter.lang = 'en-US';
+      
+      // Add event listeners for better user feedback
+      utter.onstart = () => console.log('Audio started');
+      utter.onend = () => console.log('Audio finished');
+      utter.onerror = (event) => {
+        console.error('Speech synthesis error:', event.error);
+        alert('Sorry, there was an error playing the audio. Please try again.');
+      };
+      
+      window.speechSynthesis.speak(utter);
+    } catch (error) {
+      console.error('Speech synthesis error:', error);
+      alert('Sorry, your browser does not support speech synthesis.');
+    }
   } else {
     alert('Sorry, your browser does not support speech synthesis.');
   }
