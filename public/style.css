@@ -171,6 +171,18 @@ button[type="submit"]:hover {
   .entry-list li {
     padding: 10px;
   }
+  .pagination-container {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .page-numbers {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .pagination-btn {
+    font-size: 1em;
+    padding: 8px 12px;
+  }
 }
 
 /* Search Container Styles */
@@ -244,5 +256,51 @@ button[type="submit"]:hover {
   text-align: center;
   padding: 20px;
   color: #7c6f57;
+  font-style: italic;
+}
+
+/* Pagination Styles */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 4px;
+}
+
+.pagination-btn {
+  background: #e6d3b3;
+  color: #4b3e2f;
+  border: 1px solid #bfa77a;
+  border-radius: 4px;
+  font-size: 0.9em;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-family: 'Georgia', serif;
+  transition: background 0.2s;
+  min-width: 40px;
+}
+
+.pagination-btn:hover {
+  background: #f4ecd8;
+}
+
+.pagination-btn.active {
+  background: #d2b48c;
+  color: #fff;
+  border-color: #bfa77a;
+}
+
+.pagination-info {
+  text-align: center;
+  margin-top: 12px;
+  color: #7c6f57;
+  font-size: 0.9em;
   font-style: italic;
 } 

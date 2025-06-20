@@ -21,11 +21,13 @@ searchInput.addEventListener('keypress', function(e) {
 
 // Global variable to store all entries for search
 let allEntries = [];
+let currentPage = 1;
+const entriesPerPage = 5;
 
 document.addEventListener('DOMContentLoaded', showEntryList);
 
 function showEntryList() {
-  mainContent.innerHTML = '<h2>Browse Entries</h2><ul class="entry-list" id="entryList"></ul>';
+  mainContent.innerHTML = '<h2>Browse Entries</h2><ul class="entry-list" id="entryList"></ul><div id="pagination"></div>';
   fetch('/api/entries')
     .then(res => res.json())
     .then(entries => {
@@ -37,7 +39,15 @@ function showEntryList() {
         list.innerHTML = '<li>No entries yet.</li>';
         return;
       }
-      entries.forEach(entry => {
+      
+      // Calculate pagination
+      const totalPages = Math.ceil(entries.length / entriesPerPage);
+      const startIndex = (currentPage - 1) * entriesPerPage;
+      const endIndex = startIndex + entriesPerPage;
+      const pageEntries = entries.slice(startIndex, endIndex);
+      
+      // Display entries for current page
+      pageEntries.forEach(entry => {
         const li = document.createElement('li');
         li.innerHTML = `
           <div class="entry-title">${entry.title}</div>
@@ -52,6 +62,12 @@ function showEntryList() {
         li.onclick = () => showEntryDetail(entry.id);
         list.appendChild(li);
       });
+      
+      // Add pagination controls
+      if (totalPages > 1) {
+        const pagination = document.getElementById('pagination');
+        pagination.innerHTML = createPaginationControls(currentPage, totalPages, entries.length, startIndex + 1, endIndex);
+      }
       
       // Update search button visibility
       clearSearchBtn.style.display = 'none';
@@ -218,6 +234,7 @@ function showLettersList() {
 function performSearch() {
   const searchTerm = searchInput.value.trim().toLowerCase();
   if (searchTerm === '') {
+    currentPage = 1; // Reset to first page
     showEntryList();
     return;
   }
@@ -270,5 +287,40 @@ function performSearch() {
 function clearSearch() {
   searchInput.value = '';
   clearSearchBtn.style.display = 'none';
+  showEntryList();
+}
+
+function createPaginationControls(currentPage, totalPages, totalEntries, startEntry, endEntry) {
+  let controls = '<div class="pagination-container">';
+  
+  // Previous button
+  if (currentPage > 1) {
+    controls += `<button class="pagination-btn" onclick="changePage(${currentPage - 1})">← Previous</button>`;
+  }
+  
+  // Page numbers
+  controls += '<div class="page-numbers">';
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === currentPage) {
+      controls += `<button class="pagination-btn active">${i}</button>`;
+    } else {
+      controls += `<button class="pagination-btn" onclick="changePage(${i})">${i}</button>`;
+    }
+  }
+  controls += '</div>';
+  
+  // Next button
+  if (currentPage < totalPages) {
+    controls += `<button class="pagination-btn" onclick="changePage(${currentPage + 1})">Next →</button>`;
+  }
+  
+  controls += '</div>';
+  controls += `<div class="pagination-info">Showing entries ${startEntry}-${Math.min(endEntry, totalEntries)} of ${totalEntries} total</div>`;
+  
+  return controls;
+}
+
+function changePage(page) {
+  currentPage = page;
   showEntryList();
 } 
